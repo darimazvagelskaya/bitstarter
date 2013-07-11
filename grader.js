@@ -46,13 +46,11 @@ var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
 
-var checkHtmlFile = function(myCheerioObject, checksfile) {
-    //$ = cheerioHtmlFile(htmlfile);
-	//console.log("Cheerio: " + $);
+var checkHtmlFile = function(myCheerioObjectFunction, checksfile) {
     var checks = loadChecks(checksfile).sort();
     var out = {};
     for(var ii in checks) {
-        var present = myCheerioObject(checks[ii]).length > 0;
+        var present = myCheerioObjectFunction(checks[ii]).length > 0;
         out[checks[ii]] = present;
     }
     return out;
@@ -70,26 +68,25 @@ if(require.main == module) {
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
 		.option('-u, --url <url_link>', 'Link to url')
         .parse(process.argv);
-	//console.log("Your file: " + program.file + "\n");
-	//console.log("Your url: " + program.url + "\n");
-/* 	if (program.url) {
+ 	if (program.url) {
+		// use url if it is
 		rest.get(program.url).on('complete', function(result) {
 			if (result instanceof Error) {
 				console.log('Error: ' + result.message);
-				this.retry(5000); // try again after 5 sec
+				//this.retry(5000); // try again after 5 sec
 			} else {
-				//console.log(result);
-				$ = cheerio.load(result);
-				console.log("Cheerio: " + $);
+				myCheerioObjectFunction = cheerio.load(result);
+				var checkJson = checkHtmlFile(myCheerioObjectFunction, program.checks);
+				var outJson = JSON.stringify(checkJson, null, 4);
+				console.log(outJson);
 			}
 		});
+	} else { // use file
+		myCheerioObjectFunction = cheerioHtmlFile(program.file);
+		var checkJson = checkHtmlFile(myCheerioObjectFunction, program.checks);
+		var outJson = JSON.stringify(checkJson, null, 4);
+		console.log(outJson);
 	};
- */
-	
-	myCheerioObject = cheerioHtmlFile(program.file);
-	var checkJson = checkHtmlFile(myCheerioObject, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
